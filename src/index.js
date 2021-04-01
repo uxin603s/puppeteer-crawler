@@ -5,7 +5,7 @@ const data = {};
 for (let i in list) {
     const item = list[i];
     data[item.lang] || (data[item.lang] = [])
-    data[item.lang].push(item.content)
+    data[item.lang].push(item)
 }
 const result = [];
 
@@ -19,11 +19,13 @@ const result = [];
         await page.evaluate(() => document.querySelector("textarea").value = "")
         await page.focus("textarea")
         for (let i = 0; i < data[lang].length; i++) {
-            const content = data[lang][i]
-            await page.keyboard.type(content)
+            const item = data[lang][i]
+            await page.keyboard.type(item.content)
             await page.waitForFunction(`document.querySelector('div[lang]')`);
-            const gogo = (await page.evaluate(() => document.querySelector('div[lang]').innerText));
-            result.push({ lang, content, gogo })
+            item.result = (await page.evaluate(() => document.querySelector('div[lang]').innerText));
+            console.log(item)
+
+            result.push(item)
 
             await page.evaluate(() => document.querySelector("textarea").value = "")
             await page.keyboard.type(" ")
@@ -32,6 +34,7 @@ const result = [];
         }
         await browser.close();
     }
+    fs.writeFileSync(`output.json`, JSON.stringify(result));
     // console.log(result)
-    fs.writeFileSync(`output.json`,JSON.stringify(result));
+
 })();
